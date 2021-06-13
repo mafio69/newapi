@@ -1,0 +1,80 @@
+version: '2'
+services:
+  api:
+    container_name: api
+    build:
+      context: ./
+    ports:
+      - "${WEB_PORT}:8080"
+      - "9004:9000"
+    depends_on:
+      - database
+    environment:
+      - SERVERNAME=api.ccfound.test
+      - SERVERALIAS=www.api.ccfound.test
+      - DRUSH_VERSION=8/9
+      - APACHE_SERVER_NAME=api.ccfound.test
+      - DOCUMENTROOT=${DOCUMENT_ROOT}
+      - APP_NAME=${APP_NAME}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=4000
+      - PHP_SENDMAIL_DOMAIN=localhost
+      - APP_ENV=local
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DOCUMENT_ROOT=${DOCUMENT_ROOT}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DEBUG=${DEBUG}
+      - SOCKET=~
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - XDEBUG_ENABLED=1
+      - XDEBUG_REMOTE_AUTOSTART=1
+      - XDEBUG_REMOTE_PORT=9003
+    volumes:
+      - ./main-compose:/var/www/html
+      - ./logs:/var/log/cron
+    links:
+      - database:mysql
+    # command: ["apache2-foreground"]
+
+  database:
+    container_name: db
+    # actency/docker-mysql available tags: latest, 5.7, 5.6, 5.5
+    image: bitnami/mariadb
+    ports:
+      - "${DATABASE_PORT}:3306"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - MARIADB_DATABASE=${DATABASE_NAME}
+      - MARIADB_USER=${DATABASE_USER}
+      - MARIADB_PASSWORD=${DATABASE_PASSWORD}
+      - MARIADB_ROOT_PASSWORD=${DATABASE_ROOT_PASSWORD}
+    expose:
+      - "4000"
+
+  cloudsql:
+    container_name: sqlcloud
+    image: gcr.io/cloudsql-docker/gce-proxy:1.11
+    command: /cloud_sql_proxy -instances=ccfound-vpc-host-dev:europe-west3:dev-sql-mf=tcp:0.0.0.0:3306 -credential_file=/secrets/cloudsql/ccfound-vpc-host-dev-256eed29203a.json
+    volumes:
+      - ./credential:/secrets/cloudsql
+    ports:
+      - 4446:3306
+    expose:
+      - "5000"
+
+  mailtrap:
+    container_name: mailrtrap
+    image: mailhog/mailhog
+    logging:
+      driver: 'none'  # disable saving logs
+    ports:
+      - 1025:1025 # smtp server
+      - 8025:8025 # web ui
+
+networks:
+  default:
+    external:
+      name: mf-net
