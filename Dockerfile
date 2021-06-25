@@ -1,6 +1,7 @@
-FROM khromov/alpine-nginx-php8
-
-
+FROM mafio69/phpnginx
+USER root
+RUN apk update && apk add git
+RUN mkdir /.symfony
 ENV XDEBUG_VERSION="3.0.0"
 ENV APP_NAME="CCFOUND"
 ENV DATABASE_NAME="ccfound"
@@ -18,12 +19,13 @@ ENV VAR_DUMPER_SERVER=/main/var/log
 ENV DB_HOST_LOCAL=database
 ENV SERVERNAME=api.ccfound.test
 ENV SERVERALIAS=www.api.ccfound.test
-COPY ./config/fpm-pool.conf /etc/php7/php-fpm.d/server.conf
-COPY ./config/nginx.conf /etc/nginx/conf.d/server.conf
-COPY ./config/nginx.conf /etc/nginx/nginx.conf
-COPY ./config/php.ini /etc/php7/conf.d/settings.ini
+
 COPY ./main /main
 RUN chown 1000:1001 /main
-RUN chmod 777 /main
+RUN chown 1000:1001 /.symfony
+RUN chmod -R 777 /main
+# RUN chmod -R 777 /.gitconfig
+
+USER 1000
 
 WORKDIR /main
