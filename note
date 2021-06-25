@@ -1,0 +1,9 @@
+ * posix_isatty() should be available
+   > Install and enable the php_posix extension (used to colorize the
+   > CLI output).
+
+ * "memory_limit" should be greater than "post_max_size".
+   > Set "memory_limit" to be greater than "post_max_size".
+
+ * "post_max_size" should be greater than "upload_max_filesize".
+   > Set "post_max_size" to be greater than "upload_max_filesize".
